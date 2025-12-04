@@ -12,6 +12,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 
 app.use('/api/auth',authRoute)
+app.use('api/signin',authRoute)
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on http://localhost:${process.env.PORT}`);
 });
