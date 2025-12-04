@@ -80,3 +80,20 @@ exports.signIn = async(req,res)=>{
     return res.status(500).json({ message: err.message || 'Server error' });
   } 
 }
+exports.signOut = async(req,res)=>{
+  try{
+    //get refresh token from cookie
+    const token = req.cookies?.refreshToken;
+    if(!token){
+      return res.status(400).json({message:'No refresh token provided'});
+    }else{
+      //remove refresh token from db
+      await Session.findOneAndDelete({refreshToken:token});
+      //clear cookie
+      res.clearCookie('refreshToken');
+      return res.status(200).json({message:'Signed out successfully'});
+    }
+  }catch(err){
+    return res.status(500).json({ message: err.message || 'Server error' });
+  }
+}
