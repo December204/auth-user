@@ -7,19 +7,20 @@ const Session = require('../models/Session.js');
 const crypto = require('crypto');
 exports.signUp = async (req, res) => {
   try {
+    //get inputs
     const { username, email, password, firstName, lastName } = req.body;
-
+   //validate inputs
     if (!username || !email || !password || !firstName || !lastName) {
       return res.status(400).json({ message: 'All fields are required' });
     }
-
+   //check duplicate username
     const duplicateUser = await User.findOne({ username });
     if (duplicateUser) {
       return res.status(409).json({ message: 'Username already exists' });
     }
-
+    //hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-
+    //create user
     await User.create({
       username,
       email,
