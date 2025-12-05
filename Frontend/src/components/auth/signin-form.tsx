@@ -1,21 +1,48 @@
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Label } from "../ui/label";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { useNavigate } from "react-router";
 
-import { Input } from "@/components/ui/input"
-import { Label } from "./ui/label"
+const signInSchema = z.object({
+  username: z.string().min(3, "Tên đăng nhập phải có ít nhất 3 ký tự"),
+  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+});
 
-export function SignupForm({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
+type SignInFormValues = z.infer<typeof signInSchema>;
+
+export function SigninForm({ className, ...props }: React.ComponentProps<"div">) {
+  const { signIn } = useAuthStore();
+  const navigate = useNavigate();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SignInFormValues>({
+    resolver: zodResolver(signInSchema),
+  });
+
+  const onSubmit = async (data: SignInFormValues) => {
+    const { username, password } = data;
+    await signIn(username, password);
+    navigate("/");
+  };
+
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden p-0">
+    <div
+      className={cn("flex flex-col gap-6", className)}
+      {...props}
+    >
+      <Card className="overflow-hidden p-0 border-border">
         <CardContent className="grid p-0 md:grid-cols-2">
           <form
             className="p-6 md:p-8"
-            
+            onSubmit={handleSubmit(onSubmit)}
           >
             <div className="flex flex-col gap-6">
               {/* header - logo */}
@@ -30,42 +57,10 @@ export function SignupForm({
                   />
                 </a>
 
-                <h1 className="text-2xl font-bold">Tạo tài khoản </h1>
+                <h1 className="text-2xl font-bold">Chào mừng quay lại</h1>
                 <p className="text-muted-foreground text-balance">
-                  Chào mừng bạn! Hãy đăng ký để bắt đầu!
+                  Đăng nhập vào tài khoản  của bạn
                 </p>
-              </div>
-
-              {/* họ & tên */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="lastname"
-                    className="block text-sm"
-                  >
-                    Họ
-                  </Label>
-                  <Input
-                    type="text"
-                    id="lastname"
-                    
-                  />
-
-                </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="fistname"
-                    className="block text-sm"
-                  >
-                    Tên
-                  </Label>
-                  <Input
-                    type="text"
-                    id="firstname"
-                    
-                  />
-                
-                </div>
               </div>
 
               {/* username */}
@@ -79,27 +74,14 @@ export function SignupForm({
                 <Input
                   type="text"
                   id="username"
-                  placeholder="Username"
-                  
+                  placeholder=""
+                  {...register("username")}
                 />
-                
-              </div>
-
-              {/* email */}
-              <div className="flex flex-col gap-3">
-                <Label
-                  htmlFor="email"
-                  className="block text-sm"
-                >
-                  Email
-                </Label>
-                <Input
-                  type="email"
-                  id="email"
-                  placeholder="m@gmail.com"
-                  
-                />
-              
+                {errors.username && (
+                  <p className="text-destructive text-sm">
+                    {errors.username.message}
+                  </p>
+                )}
               </div>
 
               {/* password */}
@@ -113,34 +95,38 @@ export function SignupForm({
                 <Input
                   type="password"
                   id="password"
-                  placeholder="********"
+                  {...register("password")}
                 />
-             
+                {errors.password && (
+                  <p className="text-destructive text-sm">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
 
-              {/* nút đăng ký */}
+              {/* nút đăng nhập */}
               <Button
                 type="submit"
                 className="w-full"
-                
+                disabled={isSubmitting}
               >
-                Tạo tài khoản
+                Đăng nhập
               </Button>
 
               <div className="text-center text-sm">
-                Đã có tài khoản?{" "}
+                Chưa có tài khoản?{" "}
                 <a
-                  href="/signin"
+                  href="/signup"
                   className="underline underline-offset-4"
                 >
-                  Đăng nhập
+                  Đăng ký
                 </a>
               </div>
             </div>
           </form>
           <div className="bg-muted relative hidden md:block">
             <img
-              src="/placeholderSignUp.png"
+              src="/placeholder.png"
               alt="Image"
               className="absolute top-1/2 -translate-y-1/2 object-cover"
             />
@@ -152,5 +138,5 @@ export function SignupForm({
         <a href="#">Chính sách bảo mật</a> của chúng tôi.
       </div>
     </div>
-  )
+  );
 }
